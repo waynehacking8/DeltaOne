@@ -1,0 +1,4 @@
+
+########## Safety Evaluation ASR ##########
+                Model_ID    ASR  Test_Num
+vllm-deltaone-v2-rho0.05 18.48%       330

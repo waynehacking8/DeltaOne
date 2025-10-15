@@ -1,0 +1,72 @@
+[build-system]
+requires = ["setuptools>=65.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "deltaone"
+version = "0.1.0"
+description = "DeltaOne++: Memory-Efficient SafeDelta with Rank-Free ADB"
+authors = [{name = "DeltaOne Team"}]
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.10"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "torch>=2.2.0",
+    "safetensors>=0.4.0",
+    "numpy>=1.24.0",
+    "scipy>=1.10.0",
+    "tqdm>=4.65.0",
+    "rich>=13.0.0",
+    "typing_extensions>=4.5.0",
+    "psutil>=5.9.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.3.0",
+    "pytest-xdist>=3.2.0",
+    "ruff>=0.1.0",
+    "mypy>=1.3.0",
+    "pre-commit>=3.3.0",
+]
+
+[project.scripts]
+d1-convert = "deltaone.cli.d1_convert:main"
+d1-select = "deltaone.cli.d1_select:main"
+d1-apply = "deltaone.cli.d1_apply:main"
+
+[tool.setuptools]
+packages = ["deltaone"]
+
+[tool.setuptools.package-data]
+deltaone = ["py.typed"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+select = ["E", "F", "I", "N", "W", "UP"]
+ignore = ["E501"]
+
+[tool.ruff.per-file-ignores]
+"__init__.py" = ["F401"]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-v --tb=short"

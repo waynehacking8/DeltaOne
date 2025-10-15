@@ -1,0 +1,8 @@
+
+########## SamSum F1 ##########
+
+                Model_ID  Accuracy  Test_Num
+vllm-deltaone-v2-rho0.05    0.2633       200
+
+
+saved to  utility_evaluation/sum/data/summary_deltaone-v2_.csv

@@ -1,0 +1,12 @@
+DeltaOne++ Pass-2: Delta Application
+
+Found 2 original shard(s)
+Found 2 delta shard(s)
+OBS compensation: False
+  Applying deltas... ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100% 0:00:09
+
+✓ Model saved to test_outputs/deltaone_model_3b_rho005
+Total parameters: 3,212,749,824
+Modified parameters: 18,147,350 (0.56%)
+
+✓ Application complete
