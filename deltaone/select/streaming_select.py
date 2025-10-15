@@ -44,6 +44,9 @@ class StreamingSelector:
         self.budget = budget
         self.cumulative_cost = 0.0
         self.num_selected = 0
+        # Heap statistics
+        self.heap_ops = 0  # Number of heap push/pop operations
+        self.max_heap_size = 0  # Maximum heap size during selection
 
     def select_from_blocks(
         self,
@@ -91,11 +94,15 @@ class StreamingSelector:
                     cost=block_data["costs"][0],
                 )
                 heapq.heappush(heap, entry)
+                self.heap_ops += 1
+
+        self.max_heap_size = len(heap)
 
         # K-way merge: repeatedly pop max score, add to selection
         while heap and self.cumulative_cost < self.budget:
             # Pop element with highest score (most negative in min-heap)
             entry = heapq.heappop(heap)
+            self.heap_ops += 1
 
             # Check if adding this parameter exceeds budget
             if self.cumulative_cost + entry.cost > self.budget:
@@ -122,10 +129,19 @@ class StreamingSelector:
                     cost=block_data["costs"][next_pos],
                 )
                 heapq.heappush(heap, next_entry)
+                self.heap_ops += 1
+                self.max_heap_size = max(self.max_heap_size, len(heap))
 
         return {
             "num_selected": self.num_selected,
             "cumulative_cost": self.cumulative_cost,
             "budget": self.budget,
             "selection_ratio": self.num_selected / bitset.total_params,
+            # K-way merge statistics
+            "heap_statistics": {
+                "total_operations": self.heap_ops,
+                "max_heap_size": self.max_heap_size,
+                "num_blocks": len(sorted_blocks),
+                "streaming_optimal": True,  # Uses exact K-way heap merge
+            },
         }
