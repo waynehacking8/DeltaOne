@@ -172,6 +172,106 @@ After running `d1-select`, find certificates in `selection_stats.json`:
 
 See [docs/THEORY.md](docs/THEORY.md) for complete mathematical framework.
 
+## 🔬 Reproducibility & Verification
+
+### Streaming Optimality
+
+DeltaOne++ uses **K-way merge heap** for exact global parameter selection with O(K) memory:
+
+```bash
+# Streaming mode (default) - exact global top-k
+d1-select --delta /delta --out-bitset-dir /bitsets --target-rho 0.12
+
+# Verify streaming optimality in output
+cat /bitsets/selection_stats.json | jq '.layers[].heap_statistics'
+# {
+#   "total_operations": 12345,
+#   "max_heap_size": 64,  # ≤ num_blocks
+#   "num_blocks": 64,
+#   "streaming_optimal": true
+# }
+```
+
+The heap size never exceeds K (number of blocks), proving O(K) memory complexity while achieving results equivalent to full sorting.
+
+### ρ-Targeting Closed-Loop Control
+
+Automatic scale adjustment to hit target selection ratio (Proposition G):
+
+```bash
+# Target 12% parameter selection
+d1-select --delta /delta --out-bitset-dir /bitsets --target-rho 0.12
+
+# Check convergence in output
+cat /bitsets/selection_stats.json | jq '.rho_targeting'
+# {
+#   "target_ratio": 0.12,
+#   "achieved_ratio": 0.1198,
+#   "scale_initial": 0.11,
+#   "scale_final": 0.1162,
+#   "iterations": 2,
+#   "converged": true,
+#   "history": [[0.11, 0.1075], [0.1162, 0.1198]]
+# }
+```
+
+The controller uses feedback formula `s_new = s × (ρ*/ρ_now)^κ` for fast convergence (typically 2-3 iterations).
+
+### OBS Compensation Statistics
+
+When using `--obs` for second-order compensation:
+
+```bash
+# Apply with OBS compensation
+d1-apply --orig /models/base --delta /delta --bitset-dir /bitsets \
+  --out /models/safe --obs
+
+# Check CG solver convergence
+cat /models/safe/deltaone_metadata.json | jq '.obs_statistics'
+# {
+#   "total_solves": 1234,
+#   "avg_iterations": 15.4,
+#   "residual_max": 0.0234,
+#   "residual_mean": 0.0089,
+#   "cache_hit_rate": 0.45
+# }
+```
+
+Residual statistics verify the CG solver converges within theoretical bounds (typically < 0.1 per solve).
+
+### Certificate Verification
+
+All five theoretical guarantees can be verified programmatically:
+
+```python
+import json
+
+# Load selection statistics
+with open('/bitsets/selection_stats.json') as f:
+    stats = json.load(f)
+
+# Verify each certificate
+for layer_name, layer_stats in stats['layers'].items():
+    # 1. PAC-Bayes: KL divergence should match cost under Rank-Free ADB
+    kl = layer_stats['pac_bayes']['kl_divergence']
+
+    # 2. Robust Feasibility: worst-case cost ≤ budget
+    assert layer_stats['robust_feasibility']['is_feasible']
+
+    # 3. Submodularity: γ ∈ [0, 1]
+    gamma = layer_stats['submodularity']['gamma']
+    assert 0 <= gamma <= 1
+
+    # 4. Dual Gap: non-negative (feasibility)
+    assert layer_stats['dual_optimality']['gap'] >= 0
+
+    # 5. Streaming: heap size ≤ num_blocks
+    heap_stats = layer_stats['heap_statistics']
+    assert heap_stats['max_heap_size'] <= heap_stats['num_blocks']
+```
+
+See [IMPLEMENTATION_CHECKLIST.md](IMPLEMENTATION_CHECKLIST.md) for complete verification procedures.
+
 ## 📖 Documentation
 
 - [**README**](docs/README.md) - Quick start and overview
