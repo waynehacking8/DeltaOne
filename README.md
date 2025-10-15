@@ -82,6 +82,96 @@ r'_m = |g_m| / |δw_m|
 
 See [docs/THEORY.md](docs/THEORY.md) for complete mathematical framework.
 
+## 🏆 Theory 2.0: Provable Guarantees
+
+DeltaOne++ provides **5 provable certificates** for each selection, ensuring theoretical soundness beyond empirical evaluation:
+
+### 1. PAC-Bayes Safety Certificate (Theorem A)
+Probabilistic upper bound on safety risk with high confidence:
+```
+R ≤ R̂ + √((KL(q||p) + ln(1/δ)) / 2n)
+```
+where KL = Σ(cost_i / σ²) under Rank-Free ADB.
+
+### 2. Robust Feasibility (Theorem B)
+Guarantees budget feasibility under Hessian uncertainty:
+```
+Σ c_i(H⁻¹ ± η) ≤ ε  ∀ ||H⁻¹ perturbation|| ≤ Γ
+```
+Uses Bertsimas-Sim robust optimization for ±30% H⁻¹ uncertainty.
+
+### 3. Approximation Ratio (Theorem C)
+Near-optimal solution quality via weak submodularity:
+```
+U(S) ≥ (1 - e^(-γ)) × OPT
+```
+where γ ∈ [0,1] is the submodularity ratio. K-way heap achieves γ ≥ 0.95 empirically.
+
+### 4. Dual Optimality Gap (Proposition F)
+Lagrangian duality certificate for solution quality:
+```
+gap = λ*ε - Σ(λ*c_i - u_i) for i ∈ S - Σ max(0, u_i - λ*c_i) for i ∉ S
+```
+
+### 5. Trust Region Scaling (Proposition G)
+Automatic scale adjustment for target selection ratio:
+```
+s_new = s × (ρ*/ρ_now)^κ
+```
+
+### Output Format
+
+After running `d1-select`, find certificates in `selection_stats.json`:
+
+```json
+{
+  "total_params": 3212749824,
+  "total_selected": 18147350,
+  "selection_ratio": 0.0056,
+  "layers": {
+    "model.layers.0.self_attn.q_proj.weight": {
+      "pac_bayes": {
+        "kl_divergence": 0.1234,
+        "n_samples": 1000,
+        "delta": 0.05
+      },
+      "robust_feasibility": {
+        "is_feasible": true,
+        "eta": 0.3,
+        "Gamma": 409
+      },
+      "submodularity": {
+        "gamma": 0.9612,
+        "utility_type": "weak_submodular"
+      },
+      "approximation_guarantee": {
+        "approximation_ratio": 0.6183,
+        "mode": "batch"
+      },
+      "dual_optimality": {
+        "gap": 1.23e-05,
+        "relative_gap": 0.0003
+      },
+      "lambda_star": 0.0456
+    }
+  }
+}
+```
+
+### Theory-Implementation Correspondence
+
+| Theory Paper | Implementation Location | Status |
+|--------------|-------------------------|--------|
+| Rank-Free Cost (Eq. 8) | `deltaone/select/scoring.py::compute_cost_rankfree` | ✅ |
+| Δ-aware Ranking (Eq. 9) | `deltaone/select/scoring.py::compute_delta_aware_score` | ✅ |
+| K-way Merge (Alg. 1) | `deltaone/select/streaming_select.py::StreamingSelector` | ✅ |
+| PAC-Bayes (Thm. A) | `deltaone/theory/certificates.py::compute_pac_bayes_bound` | ✅ |
+| Robust Feasibility (Thm. B) | `deltaone/theory/certificates.py::compute_robust_feasibility` | ✅ |
+| Submodularity (Thm. C) | `deltaone/theory/submodularity.py::compute_submodularity_ratio` | ✅ |
+| Dual Gap (Prop. F) | `deltaone/theory/certificates.py::compute_dual_gap` | ✅ |
+
+See [docs/THEORY.md](docs/THEORY.md) for complete mathematical framework.
+
 ## 📖 Documentation
 
 - [**README**](docs/README.md) - Quick start and overview
