@@ -51,6 +51,10 @@ class CGSolver:
             "cache_misses": 0,
             "total_solves": 0,
             "avg_iterations": 0.0,
+            # Residual statistics (for OBS compensation verification)
+            "residual_max": 0.0,
+            "residual_mean": 0.0,
+            "residual_history": [],  # Keep last 100 residuals
         }
 
         # Precompute preconditioner
@@ -99,13 +103,28 @@ class CGSolver:
             b[col_idx] = 1.0
 
         # Solve using CG
-        solution, num_iter = self._cg_solve(b)
+        solution, num_iter, residual = self._cg_solve(b)
 
-        # Update stats
+        # Update iteration stats
         alpha = 0.1  # Exponential moving average
         self.stats["avg_iterations"] = (
             (1 - alpha) * self.stats["avg_iterations"] + alpha * num_iter
         )
+
+        # Update residual stats
+        self.stats["residual_max"] = max(self.stats["residual_max"], residual)
+        if self.stats["total_solves"] == 1:
+            self.stats["residual_mean"] = residual
+        else:
+            # Exponential moving average for mean
+            self.stats["residual_mean"] = (
+                (1 - alpha) * self.stats["residual_mean"] + alpha * residual
+            )
+
+        # Track residual history (last 100)
+        self.stats["residual_history"].append(residual)
+        if len(self.stats["residual_history"]) > 100:
+            self.stats["residual_history"].pop(0)
 
         # Convert to numpy and cache
         solution_np = solution.cpu().numpy()
@@ -117,14 +136,14 @@ class CGSolver:
 
         return solution_np
 
-    def _cg_solve(self, b: torch.Tensor) -> tuple[torch.Tensor, int]:
+    def _cg_solve(self, b: torch.Tensor) -> tuple[torch.Tensor, int, float]:
         """Run CG iterations to solve (2G)x = b.
 
         Args:
             b: Right-hand side vector
 
         Returns:
-            Tuple of (solution, num_iterations)
+            Tuple of (solution, num_iterations, final_residual_norm)
         """
         # Initialize
         x = torch.zeros_like(b)
@@ -158,7 +177,7 @@ class CGSolver:
             # Check convergence
             residual_norm = torch.norm(r).item()
             if residual_norm < self.tol:
-                return x, iteration + 1
+                return x, iteration + 1, residual_norm
 
             # Apply preconditioner
             if self._preconditioner is not None:
@@ -173,8 +192,9 @@ class CGSolver:
 
             rz_old = rz_new
 
-        # Max iterations reached
-        return x, self.max_iter
+        # Max iterations reached - compute final residual
+        final_residual = torch.norm(r).item()
+        return x, self.max_iter, final_residual
 
     def solve_batch(self, col_indices: list[int]) -> dict[int, np.ndarray]:
         """Solve for multiple columns.

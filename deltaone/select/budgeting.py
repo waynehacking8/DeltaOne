@@ -101,3 +101,83 @@ def find_scale_for_target_ratio(
 
     # Return middle value if not converged
     return (scale_min + scale_max) / 2.0
+
+
+def rho_targeting_control(
+    costs: np.ndarray,
+    scores: np.ndarray,
+    target_ratio: float,
+    scale_initial: float = 0.11,
+    kappa: float = 0.5,
+    max_iter: int = 5,
+    tol: float = 0.01,
+) -> dict:
+    """Closed-loop ρ-targeting with iterative refinement (Proposition G).
+
+    Implements automatic scale adjustment: s_new = s × (ρ*/ρ_now)^κ
+
+    Args:
+        costs: Safety costs for all parameters
+        scores: Ranking scores (higher = more important)
+        target_ratio: Target selection ratio ρ* (e.g., 0.12 for 12%)
+        scale_initial: Initial scale guess
+        kappa: Control gain (0.5 = sqrt feedback, 1.0 = direct)
+        max_iter: Maximum refinement iterations
+        tol: Convergence tolerance for ratio
+
+    Returns:
+        Dictionary with:
+            - scale_final: Converged scale value
+            - ratio_final: Achieved selection ratio
+            - iterations: Number of iterations used
+            - converged: Whether convergence criterion was met
+            - history: List of (scale, ratio) tuples per iteration
+    """
+    from .budgeting_extra import rho_targeting_update
+
+    scale = scale_initial
+    history = []
+
+    for iteration in range(max_iter):
+        # Compute budget and selection with current scale
+        budget = compute_budget_rankfree(costs, scale)
+        _, num_selected = compute_dual_threshold(scores, costs, budget)
+        ratio = num_selected / len(costs)
+
+        history.append((float(scale), float(ratio)))
+
+        # Check convergence
+        if abs(ratio - target_ratio) < tol:
+            return {
+                "scale_final": float(scale),
+                "ratio_final": float(ratio),
+                "iterations": iteration + 1,
+                "converged": True,
+                "history": history,
+                "target_ratio": float(target_ratio),
+                "scale_initial": float(scale_initial),
+                "kappa": float(kappa),
+            }
+
+        # Update scale using ρ-targeting formula
+        scale = rho_targeting_update(
+            s=scale,
+            rho_target=target_ratio,
+            rho_now=ratio,
+            kappa=kappa,
+        )
+
+        # Clamp scale to reasonable bounds
+        scale = max(0.01, min(0.50, scale))
+
+    # Max iterations reached
+    return {
+        "scale_final": float(scale),
+        "ratio_final": float(ratio),
+        "iterations": max_iter,
+        "converged": False,
+        "history": history,
+        "target_ratio": float(target_ratio),
+        "scale_initial": float(scale_initial),
+        "kappa": float(kappa),
+    }

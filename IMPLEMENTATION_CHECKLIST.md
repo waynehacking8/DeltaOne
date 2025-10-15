@@ -99,11 +99,11 @@ This document tracks the correspondence between the Theory 2.0 paper and the imp
 | Requirement | Implementation | Status | Location |
 |------------|----------------|--------|----------|
 | ρ-targeting formula | `s_new = s × (ρ*/ρ)^κ` | ✅ | `deltaone/select/budgeting_extra.py::rho_targeting_update()` |
-| Automatic adjustment | Closed-loop control | ⚠️ | Available but not in main loop yet |
+| Automatic adjustment | Closed-loop control | ✅ | `deltaone/select/budgeting.py::rho_targeting_control()` |
 | Configurable κ | Default: κ=0.5 | ✅ | Tunable parameter |
-| Iterative refinement | Multi-pass support | 🔄 | Future enhancement |
+| Iterative refinement | Multi-pass support | ✅ | Full convergence tracking with history |
 
-**Status:** Function available, integration into automatic loop pending.
+**Status:** Complete. Closed-loop ρ-targeting with convergence tracking available.
 
 ## ✅ Streaming Optimality Verification
 
@@ -185,12 +185,32 @@ This document tracks the correspondence between the Theory 2.0 paper and the imp
 }
 ```
 
+## ✅ OBS Compensation Statistics
+
+| Metric | Implementation | Status | Location |
+|--------|----------------|--------|----------|
+| **Residual tracking** | Per-solve residual norm | ✅ | `deltaone/hessian/cg_solver.py::_cg_solve()` |
+| **Max residual** | Running maximum | ✅ | `CGSolver.stats["residual_max"]` |
+| **Mean residual** | Exponential moving average | ✅ | `CGSolver.stats["residual_mean"]` |
+| **Residual history** | Last 100 solves | ✅ | `CGSolver.stats["residual_history"]` |
+| **Statistics export** | Via `get_stats()` | ✅ | Auto-propagated to OBS compensator |
+
+**Output Format:**
+```json
+"cg_statistics": {
+  "total_solves": 123,
+  "avg_iterations": 15.4,
+  "residual_max": 0.0234,
+  "residual_mean": 0.0089,
+  "residual_history": [0.0091, 0.0087, ...],
+  "cache_hit_rate": 0.45
+}
+```
+
 ## 🔄 Future Enhancements
 
 | Enhancement | Priority | Complexity | Notes |
 |------------|----------|------------|-------|
-| **Automatic ρ-targeting loop** | High | Medium | Iterative scale adjustment |
-| **OBS compensation tracking** | Medium | Low | CG residual statistics |
 | **Certificate visualization** | Medium | Medium | Matplotlib/Plotly curves |
 | **Multi-alpha scanning** | Low | Low | Already supported in CLI |
 | **Threshold scan mode** | Low | Medium | Alternative to heap |
@@ -261,7 +281,9 @@ assert output["heap_statistics"]["max_heap_size"] <= output["heap_statistics"]["
 |-----------|-------------|------|--------|
 | Core algorithm | Claude Code | 2025-10-15 | `bcbbd9f` |
 | Theory 2.0 certificates | Claude Code | 2025-10-15 | `bcbbd9f` |
-| Heap statistics | Claude Code | 2025-10-15 | (pending) |
+| Heap statistics | Claude Code | 2025-10-15 | `bcbbd9f` |
+| ρ-Targeting closed-loop | Claude Code | 2025-10-15 | (pending) |
+| OBS residual statistics | Claude Code | 2025-10-15 | (pending) |
 | Documentation | Claude Code | 2025-10-15 | `bcbbd9f` |
 
 ---
