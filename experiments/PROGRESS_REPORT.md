@@ -252,5 +252,41 @@
 
 ---
 
-**Status**: 2/5 minimum experiments completed (40%)
-**Next Milestone**: Complete ρ sweep and system benchmarking
+**Status**: 2/5 minimum experiments completed (40%), 2 more in progress
+**Next Milestone**: Complete ρ sweep data collection and analysis
+
+## Latest Updates (2025-10-15 17:35)
+
+### 🔄 Experiment C: ρ Sweep - IN PROGRESS
+**Status**: Scripts complete, model generation started
+
+**Scripts Created**:
+- ✅ `run_rho_sweep.py` - Automated model generation with different ρ
+- ✅ `plot_rho_curve.py` - ASR vs ρ visualization with optimal point
+
+**Models Being Generated**:
+- 🔄 ρ=0.10 (in progress)
+- ⏳ ρ=0.12 (queued)
+- ⏳ ρ=0.15 (queued)
+- ⏳ ρ=0.20 (queued)
+- ✅ ρ=0.05 (already exists: 13.6% ASR)
+
+**Expected Output**:
+- U-shaped ASR vs ρ curve
+- Optimal ρ identification (expected ~0.10-0.12)
+- ρ-targeting convergence analysis
+
+### 🔄 Experiment H: Performance Benchmarking - READY
+**Status**: Script complete, ready to run
+
+**Script Created**:
+- ✅ `benchmark_performance.py` - Time & memory monitoring
+- Features: Wall-clock timing, peak RSS memory, LaTeX table generation
+
+**Metrics to Measure**:
+1. DeltaOne++ Pass-1 + Pass-2 time
+2. SafeDelta estimated time (from paper)
+3. Peak memory comparison
+4. Speedup factors (target: 337×)
+
+**Next**: Run benchmark once ρ sweep completes
