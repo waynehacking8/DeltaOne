@@ -255,18 +255,19 @@
 **Status**: 2/5 minimum experiments completed (40%), 2 more in progress
 **Next Milestone**: Complete ρ sweep data collection and analysis
 
-## Latest Updates (2025-10-15 17:35)
+## Latest Updates (2025-10-15 17:43)
 
-### 🔄 Experiment C: ρ Sweep - IN PROGRESS
-**Status**: Scripts complete, model generation started
+### 🔄 Experiment C: ρ Sweep - ACTIVELY RUNNING
+**Status**: Model generation in progress (2 parallel processes)
 
 **Scripts Created**:
 - ✅ `run_rho_sweep.py` - Automated model generation with different ρ
 - ✅ `plot_rho_curve.py` - ASR vs ρ visualization with optimal point
+- ✅ `monitor_experiments.sh` - Real-time experiment tracking
 
 **Models Being Generated**:
-- 🔄 ρ=0.10 (in progress)
-- ⏳ ρ=0.12 (queued)
+- 🔄 ρ=0.10 (Pass-1 selection, PID 682280, layer 0, 101% CPU)
+- ⏳ ρ=0.12 (queued for standalone evaluation)
 - ⏳ ρ=0.15 (queued)
 - ⏳ ρ=0.20 (queued)
 - ✅ ρ=0.05 (already exists: 13.6% ASR)
@@ -276,8 +277,12 @@
 - Optimal ρ identification (expected ~0.10-0.12)
 - ρ-targeting convergence analysis
 
-### 🔄 Experiment H: Performance Benchmarking - READY
-**Status**: Script complete, ready to run
+**Current Progress**:
+- ρ=0.10 selection: Processing model.layers.0.mlp.down_proj (3.0M generated)
+- System resources: 2.68 load avg, 21GB/62GB memory (33.9%), healthy
+
+### 🔄 Experiment H: Performance Benchmarking - RUNNING
+**Status**: Benchmark actively running (PID 688530)
 
 **Script Created**:
 - ✅ `benchmark_performance.py` - Time & memory monitoring
@@ -289,4 +294,9 @@
 3. Peak memory comparison
 4. Speedup factors (target: 337×)
 
-**Next**: Run benchmark once ρ sweep completes
+**Current Activity**:
+- Benchmark subprocess (PID 688532) running ρ=0.12 selection at 115% CPU
+- Monitoring peak memory and wall-clock time
+- Will generate LaTeX table and JSON results
+
+**Output Location**: `experiments/results/exp_h_performance/`
