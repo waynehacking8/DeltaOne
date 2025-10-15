@@ -1,0 +1,9 @@
+{
+  "EXPERIMENT_NAME": "llama3.2-3b-rho0.12",
+  "ORIG_MODEL": "/home/wayneleo8/SafeDelta/llama2/ckpts/llama3.2-3b-instruct",
+  "FT_MODEL": "/home/wayneleo8/SafeDelta/llama2/ckpts/llama3.2-3b-harmful",
+  "DELTA_PATH": "/home/wayneleo8/SafeDelta/llama2/delta_weights/purebad100-3b-full.safetensors",
+  "TARGET_RHO": 0.12,
+  "USE_OBS": false,
+  "DESCRIPTION": "DeltaOne++ baseline: 3B model with 12% parameter selection (no OBS)"
+}

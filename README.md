@@ -272,12 +272,47 @@ for layer_name, layer_stats in stats['layers'].items():
 
 See [IMPLEMENTATION_CHECKLIST.md](IMPLEMENTATION_CHECKLIST.md) for complete verification procedures.
 
+## 🧪 Running Experiments
+
+### Automated Pipeline
+
+Use the provided pipeline script for reproducible experiments:
+
+```bash
+# Run with predefined configuration
+./scripts/run_deltaone_pipeline.sh example_3b_rho12
+
+# Results will be saved to:
+# experiments/results/{experiment_name}_{timestamp}/
+```
+
+### Directory Structure
+
+```
+DeltaOne/
+├── deltaone/           # Core implementation
+├── scripts/            # Pipeline and utility scripts
+│   ├── run_deltaone_pipeline.sh
+│   ├── create_stats.py
+│   └── monitor.py
+├── experiments/        # Experiment configurations and results
+│   ├── configs/        # JSON configuration files
+│   ├── results/        # Output from experiments (gitignored)
+│   └── README.md       # Experiment guide
+├── archive/            # Development documents
+└── docs/              # Documentation
+
+```
+
+See [experiments/README.md](experiments/README.md) for detailed comparison framework with SafeDelta.
+
 ## 📖 Documentation
 
 - [**README**](docs/README.md) - Quick start and overview
 - [**THEORY**](docs/THEORY.md) - Complete theoretical framework
 - [**USAGE**](docs/USAGE.md) - Detailed usage guide
 - [**SINGLE_MODEL_GUIDE**](docs/SINGLE_MODEL_GUIDE.md) - Memory guarantee explanation
+- [**EXPERIMENTS**](experiments/README.md) - SafeDelta comparison framework
 
 ## 🔧 Installation
 

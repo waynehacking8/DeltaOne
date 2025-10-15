@@ -1,5 +1,0 @@
-DeltaOne++ Pass-2: Delta Application
-
-Found 2 original shard(s)
-Found 2 delta shard(s)
-OBS compensation: False

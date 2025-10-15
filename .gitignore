@@ -42,15 +42,17 @@ venv.bak/
 *~
 
 # Large model files and test outputs
-test_outputs/deltaone_model_*/
-test_outputs/bitsets_*/
+test_outputs/
+experiments/results/
+experiments/logs/
 *.safetensors
 *.bin
 *.pt
 *.pth
 *.ckpt
+*.log
 
-# Keep only logs and small result files
-!test_outputs/*.log
-!test_outputs/*.txt
-!test_outputs/*.json
+# Keep experiment configs and documentation
+!experiments/configs/
+!experiments/README.md
+!test_outputs/.gitkeep

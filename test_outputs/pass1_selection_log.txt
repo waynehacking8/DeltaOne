@@ -1,5 +1,0 @@
-DeltaOne++ Pass-1: Parameter Selection
-
-Found 2 delta shard(s)
-Mode: heap
-Rank-Free: True
